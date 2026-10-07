@@ -75,25 +75,35 @@ jobs:
           set -euo pipefail
           STAGE="$(mktemp -d)"
           PREFIX="Assets/AppCat"
-          find Runtime Editor package.json README.md LICENSE CHANGELOG.md \
-            -not -path '*/Tests~/*' -not -name '*.meta' -type f -o -type l 2>/dev/null | while read -r f; do
-            META="$f.meta"
-            [ -f "$META" ] || continue
-            GUID="$(grep -m1 '^guid:' "$META" | awk '{print $2}')"
-            [ -n "$GUID" ] || continue
-            mkdir -p "$STAGE/$GUID"
-            cp "$f" "$STAGE/$GUID/asset"
-            cp "$META" "$STAGE/$GUID/asset.meta"
-            printf '%s/%s' "$PREFIX" "$f" > "$STAGE/$GUID/pathname"
+          stage_entry() { # $1 = path, $2 = payload kind: file|bundle|folder
+            local p="$1" kind="$2" meta guid
+            meta="$p.meta"
+            [ -f "$meta" ] || return 0
+            guid="$(grep -m1 '^guid:' "$meta" | awk '{print $2}')"
+            [ -n "$guid" ] || return 0
+            mkdir -p "$STAGE/$guid"
+            case "$kind" in
+              file)   cp "$p" "$STAGE/$guid/asset" ;;
+              bundle) cp -R "$p" "$STAGE/$guid/asset" ;;   # .xcframework: directory payload
+              folder) ;;                                     # meta only
+            esac
+            cp "$meta" "$STAGE/$guid/asset.meta"
+            printf '%s/%s' "$PREFIX" "$p" > "$STAGE/$guid/pathname"
+          }
+          # Bundle plugins are single assets whose payload is a directory.
+          find Runtime -type d -name '*.xcframework' -not -path '*/Tests~/*' | while read -r b; do
+            stage_entry "$b" bundle
           done
-          # Folders need entries too (meta only, no asset payload).
-          find Runtime Editor -type d -not -path '*/Tests~*' | while read -r d; do
-            META="$d.meta"
-            [ -f "$META" ] || continue
-            GUID="$(grep -m1 '^guid:' "$META" | awk '{print $2}')"
-            mkdir -p "$STAGE/$GUID"
-            cp "$META" "$STAGE/$GUID/asset.meta"
-            printf '%s/%s' "$PREFIX" "$d" > "$STAGE/$GUID/pathname"
+          # Regular files (skip .meta files and anything inside a bundle).
+          find Runtime Editor package.json README.md LICENSE CHANGELOG.md \
+            \( -type d -name '*.xcframework' -prune \) -o \
+            \( -type f -not -path '*/Tests~/*' -not -name '*.meta' -print \) | while read -r f; do
+            stage_entry "$f" file
+          done
+          # Folders (meta only, no payload), excluding bundle internals.
+          find Runtime Editor \( -type d -name '*.xcframework' -prune \) -o \
+            \( -type d -not -path '*/Tests~*' -print \) | while read -r d; do
+            stage_entry "$d" folder
           done
           tar -C "$STAGE" -czf "AppCatSDK-${GITHUB_REF_NAME}.unitypackage" .
           ls -la "AppCatSDK-${GITHUB_REF_NAME}.unitypackage"

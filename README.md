@@ -29,7 +29,7 @@ Pass these into `AppCat.Init(...)` below.
 **Window → Package Manager → + → Add package from git URL…**
 
 ```
-https://github.com/AppCat-AI/appcat-unity-sdk.git#v0.1.0
+https://github.com/AppCat-AI/appcat-unity-sdk.git#v0.1.1
 ```
 
 Or add it to `Packages/manifest.json`:
@@ -37,7 +37,7 @@ Or add it to `Packages/manifest.json`:
 ```json
 {
   "dependencies": {
-    "ai.appcat.sdk": "https://github.com/AppCat-AI/appcat-unity-sdk.git#v0.1.0"
+    "ai.appcat.sdk": "https://github.com/AppCat-AI/appcat-unity-sdk.git#v0.1.1"
   }
 }
 ```

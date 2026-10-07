@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1
+
+- Fix: the `.unitypackage` release asset now includes the `AppCatCoreKit.xcframework` payload. UPM installs were unaffected.
+
 ## 0.1.0
 
 - Initial release.

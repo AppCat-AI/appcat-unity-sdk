@@ -1,0 +1,33 @@
+{
+  "name": "ai.appcat.sdk",
+  "version": "0.1.0",
+  "displayName": "AppCat SDK",
+  "description": "Server-side attribution and deferred deep linking for Unity games. Improve ROAS with accurate conversion tracking via Meta CAPI, TikTok Events API, Google Ads, and Apple Search Ads.",
+  "unity": "2021.3",
+  "documentationUrl": "https://appcat.ai/documentation?guide=unity",
+  "changelogUrl": "https://github.com/AppCat-AI/appcat-unity-sdk/releases",
+  "licensesUrl": "https://github.com/AppCat-AI/appcat-unity-sdk/blob/main/LICENSE",
+  "keywords": [
+    "attribution",
+    "deep-linking",
+    "analytics",
+    "meta-capi",
+    "tiktok",
+    "ads"
+  ],
+  "author": {
+    "name": "AppCat",
+    "url": "https://appcat.ai"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AppCat-AI/appcat-unity-sdk.git"
+  },
+  "samples": [
+    {
+      "displayName": "Smoke Test Scene",
+      "description": "Minimal MonoBehaviour that initializes AppCat, sends a ViewContent event and prints the attribution result.",
+      "path": "Samples~/SmokeTest"
+    }
+  ]
+}

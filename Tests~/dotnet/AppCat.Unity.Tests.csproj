@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Runs the wrapper's engine-independent logic under plain dotnet, outside the
+    Unity Editor. Compiles Runtime/*.cs and Runtime/Internal/*.cs (no UnityEngine
+    references) plus the shared NUnit tests in Tests/Editor. The Unity-specific
+    half (Runtime/Unity) is exercised by Unity EditMode tests and the smoke app.
+
+    The folder name ends with "~" so Unity ignores it.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <Nullable>disable</Nullable>
+    <LangVersion>9.0</LangVersion>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <RootNamespace>AppCat.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../../Runtime/*.cs" />
+    <Compile Include="../../Runtime/Internal/*.cs" />
+    <Compile Include="../../Tests/Editor/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="NUnit" Version="3.14.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Vendored closed-source managed core, same binary Unity loads. -->
+    <Reference Include="AppCatCore.Unity">
+      <HintPath>../../Runtime/Plugins/AppCatCore.Unity.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,105 @@
+name: Release
+
+# Triggered by pushing a `v*` tag (e.g. `v0.1.0`). Verifies the vendored
+# closed-source binaries are present, runs the host-side test suites, then
+# publishes a GitHub Release with a `.unitypackage` asset. UPM consumers
+# install straight from the git URL + tag, so no registry publish is needed.
+#
+# Vendored binaries (built from the closed-source cores):
+#   Runtime/Plugins/AppCatCore.Unity.dll
+#   Runtime/Plugins/iOS/AppCatCoreKit.xcframework
+#   Runtime/Plugins/Android/appcat-core.aar
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  verify:
+    name: Verify and test
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify vendored binaries are present
+        run: |
+          test -f Runtime/Plugins/AppCatCore.Unity.dll || (echo "Missing Runtime/Plugins/AppCatCore.Unity.dll" >&2; exit 1)
+          test -d Runtime/Plugins/iOS/AppCatCoreKit.xcframework || (echo "Missing Runtime/Plugins/iOS/AppCatCoreKit.xcframework" >&2; exit 1)
+          test -f Runtime/Plugins/Android/appcat-core.aar || (echo "Missing Runtime/Plugins/Android/appcat-core.aar" >&2; exit 1)
+
+      - name: Verify version matches tag
+        run: |
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "package.json version ($PKG_VERSION) does not match tag ($TAG_VERSION)" >&2
+            exit 1
+          fi
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: C# wrapper tests (dotnet)
+        run: dotnet test Tests~/dotnet/AppCat.Unity.Tests.csproj
+
+      - name: Swift bridge tests
+        run: cd Tests~/ios && swift test
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Kotlin bridge tests
+        run: cd Tests~/android && chmod +x gradlew && ./gradlew test --no-daemon
+
+  release:
+    name: Publish GitHub Release
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build .unitypackage
+        run: |
+          # A .unitypackage is a gzipped tar where each asset lives in a folder
+          # named by its .meta GUID containing `asset`, `asset.meta`, `pathname`.
+          set -euo pipefail
+          STAGE="$(mktemp -d)"
+          PREFIX="Assets/AppCat"
+          find Runtime Editor package.json README.md LICENSE CHANGELOG.md \
+            -not -path '*/Tests~/*' -not -name '*.meta' -type f -o -type l 2>/dev/null | while read -r f; do
+            META="$f.meta"
+            [ -f "$META" ] || continue
+            GUID="$(grep -m1 '^guid:' "$META" | awk '{print $2}')"
+            [ -n "$GUID" ] || continue
+            mkdir -p "$STAGE/$GUID"
+            cp "$f" "$STAGE/$GUID/asset"
+            cp "$META" "$STAGE/$GUID/asset.meta"
+            printf '%s/%s' "$PREFIX" "$f" > "$STAGE/$GUID/pathname"
+          done
+          # Folders need entries too (meta only, no asset payload).
+          find Runtime Editor -type d -not -path '*/Tests~*' | while read -r d; do
+            META="$d.meta"
+            [ -f "$META" ] || continue
+            GUID="$(grep -m1 '^guid:' "$META" | awk '{print $2}')"
+            mkdir -p "$STAGE/$GUID"
+            cp "$META" "$STAGE/$GUID/asset.meta"
+            printf '%s/%s' "$PREFIX" "$d" > "$STAGE/$GUID/pathname"
+          done
+          tar -C "$STAGE" -czf "AppCatSDK-${GITHUB_REF_NAME}.unitypackage" .
+          ls -la "AppCatSDK-${GITHUB_REF_NAME}.unitypackage"
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: AppCatSDK-${{ github.ref_name }}.unitypackage

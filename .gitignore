@@ -1,0 +1,29 @@
+# Unity hides folders ending in `~` from the asset pipeline (Samples~, Tests~).
+# Many global gitignores drop `*~` as editor backups; re-include ours explicitly.
+!Samples~/
+!Tests~/
+
+# dotnet (Tests~/dotnet)
+**/bin/
+**/obj/
+*.user
+
+# Swift (Tests~/ios)
+.build/
+*.xcodeproj
+Package.resolved
+
+# Gradle (Tests~/android)
+.gradle/
+build/
+local.properties
+
+# Unity scratch
+Library/
+Temp/
+Logs/
+UserSettings/
+*.unitypackage
+
+# OS
+.DS_Store

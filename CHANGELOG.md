@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.3
+
+- iOS: updated `AppCatCoreKit.xcframework`. The minimum iOS version is now 15.0.
+- Fix (iOS): `Identify` was rejected by the server, so user details were never attached.
+- Fix (iOS): purchase values passed as whole numbers or decimals were dropped.
+- Fix (iOS): a non-finite `eventTimeUnix` could crash the app.
+- Fix (iOS): `Identify` no longer replaces the result of `GetAttribution()`.
+- iOS: the advertising ID and tracking status are read at send time, so a later tracking prompt is respected.
+- iOS: `MobileAppInstall` events are now forwarded to the ad platforms.
+
 ## 0.1.2
 
 - Android: the bundled `appcat-core.aar` sends the Play Install Referrer on first open, so installs from Google App campaigns (`gclid` / `gbraid`) attribute to Google Ads. The post-processor now adds the `installreferrer` library, and a missing library no longer stops attribution.

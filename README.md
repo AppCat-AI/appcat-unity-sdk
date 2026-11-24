@@ -29,7 +29,7 @@ Pass these into `AppCat.Init(...)` below.
 **Window → Package Manager → + → Add package from git URL…**
 
 ```
-https://github.com/AppCat-AI/appcat-unity-sdk.git#v0.1.2
+https://github.com/AppCat-AI/appcat-unity-sdk.git#v0.1.3
 ```
 
 Or add it to `Packages/manifest.json`:
@@ -37,7 +37,7 @@ Or add it to `Packages/manifest.json`:
 ```json
 {
   "dependencies": {
-    "ai.appcat.sdk": "https://github.com/AppCat-AI/appcat-unity-sdk.git#v0.1.2"
+    "ai.appcat.sdk": "https://github.com/AppCat-AI/appcat-unity-sdk.git#v0.1.3"
   }
 }
 ```
@@ -61,7 +61,7 @@ Download `AppCatSDK-vX.Y.Z.unitypackage` from [Releases](https://github.com/AppC
 | Platform | Minimum Version |
 |----------|----------------|
 | Unity | 2021.3 LTS+ |
-| iOS | 13.0+ (Xcode 15+) |
+| iOS | 15.0+ |
 | Android | 5.0+ (API 21), Java 17 |
 | Scripting backend | Mono or IL2CPP |
 | API compatibility | .NET Standard 2.1 |

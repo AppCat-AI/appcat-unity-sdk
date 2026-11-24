@@ -19,17 +19,28 @@ import com.appcat.core.AppCatCore
  */
 object AppCatUnityBridge {
 
-  /** Implemented in C# (`AndroidJavaProxy`). Invoked on an arbitrary thread. */
+  /**
+   * Implemented in C# (`AndroidJavaProxy`). Invoked on an arbitrary thread.
+   *
+   * `json` is never a Java null. Unity's `AndroidJavaProxy` picks the C# method
+   * by the runtime types of the arguments and cannot match `onSuccess(string)`
+   * when the argument is null, so the call would be lost and the awaiting C#
+   * task would never complete. "No value" is sent as [JSON_NULL] instead, the
+   * same sentinel the iOS bridge uses; C# decodes it to null.
+   */
   interface Callback {
-    fun onSuccess(json: String?)
+    fun onSuccess(json: String)
     fun onError(code: String, message: String)
   }
 
   private const val ERR_INTERNAL = "ERR_INTERNAL"
   private const val ERR_SET_TRACKING_CONSENT = "ERR_SET_TRACKING_CONSENT"
 
+  /** JSON literal for "no value". See [Callback]. */
+  private const val JSON_NULL = "null"
+
   private fun Callback.safeSuccess(json: String?) {
-    try { onSuccess(json) } catch (_: Throwable) { /* host consumed */ }
+    try { onSuccess(json ?: JSON_NULL) } catch (_: Throwable) { /* host consumed */ }
   }
 
   private fun Callback.safeError(code: String, message: String) {
@@ -148,7 +159,7 @@ object AppCatUnityBridge {
     try {
       AppCatCore.instance.setTrackingConsent(granted) { result ->
         if (result.isSuccess) {
-          callback.safeSuccess(null)
+          callback.safeSuccess(JSON_NULL)
         } else {
           val err = result.exceptionOrNull()
           callback.safeError(ERR_SET_TRACKING_CONSENT, err?.message ?: "setTrackingConsent failed")

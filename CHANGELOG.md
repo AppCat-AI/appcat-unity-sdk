@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.2
+
+- Android: the bundled `appcat-core.aar` sends the Play Install Referrer on first open, so installs from Google App campaigns (`gclid` / `gbraid`) attribute to Google Ads. The post-processor now adds the `installreferrer` library, and a missing library no longer stops attribution.
+- Android: advertising ID collection is opt-in. See "Advertising ID (optional)" in the README.
+- Fix: `await AppCat.SetTrackingConsent()` and a failed `Identify` could hang on Android.
+- Fix: tracking consent was not recorded when running on the managed fallback (Editor, desktop, WebGL).
+- Fix (Android, managed fallback): `Identify` no longer replaces the result of `GetAttribution()`.
+- Fix (Android): list parameters such as `content_ids` are sent as arrays.
+- Android and managed fallback: `MobileAppInstall` events are now forwarded to the ad platforms.
+- `eventTimeUnix` can be passed with an event to set its time.
+- The bundled iOS framework is unchanged in this release.
+
 ## 0.1.1
 
 - Fix: the `.unitypackage` release asset now includes the `AppCatCoreKit.xcframework` payload. UPM installs were unaffected.

@@ -214,5 +214,11 @@ namespace AppCat
         public const string Value = "value";
         public const string Currency = "currency";
         public const string TestEventCode = "testEventCode";
+
+        /// <summary>
+        /// When the event happened, in Unix seconds. Optional: defaults to the
+        /// moment <c>SendEvent</c> is called.
+        /// </summary>
+        public const string EventTimeUnix = "eventTimeUnix";
     }
 }

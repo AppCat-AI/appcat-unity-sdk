@@ -29,7 +29,7 @@ Pass these into `AppCat.Init(...)` below.
 **Window → Package Manager → + → Add package from git URL…**
 
 ```
-https://github.com/AppCat-AI/appcat-unity-sdk.git#v0.1.1
+https://github.com/AppCat-AI/appcat-unity-sdk.git#v0.1.2
 ```
 
 Or add it to `Packages/manifest.json`:
@@ -37,7 +37,7 @@ Or add it to `Packages/manifest.json`:
 ```json
 {
   "dependencies": {
-    "ai.appcat.sdk": "https://github.com/AppCat-AI/appcat-unity-sdk.git#v0.1.1"
+    "ai.appcat.sdk": "https://github.com/AppCat-AI/appcat-unity-sdk.git#v0.1.2"
   }
 }
 ```
@@ -53,6 +53,8 @@ Download `AppCatSDK-vX.Y.Z.unitypackage` from [Releases](https://github.com/AppC
 ### Android — No Additional Configuration
 
 `appcat-core.aar` ships under `Runtime/Plugins/Android/`. An Editor post-processor adds `kotlin-stdlib` and the `INTERNET` permission to the exported Gradle project. Requires the default Unity Gradle template (Gradle 7+ / AGP 7+).
+
+**Advertising ID (optional).** Advertising ID collection on Android is opt-in. The SDK does not pull in Google's advertising ID library, so by default no advertising ID is collected or sent. To include it, add `com.google.android.gms:play-services-ads-identifier:18.0.1` to your project's Android dependencies (a custom `mainTemplate.gradle`, or the External Dependency Manager). This library adds the `com.google.android.gms.permission.AD_ID` permission to your app. Everything else works the same with or without it.
 
 ## Platform Requirements
 

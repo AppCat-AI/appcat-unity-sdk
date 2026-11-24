@@ -5,7 +5,8 @@ namespace AppCat.Internal
     /// <summary>
     /// Splits a flat sendEvent params object into the two-arg shape the core
     /// expects: <c>params</c> (custom_data) and <c>options</c> (eventId / value /
-    /// currency / testEventCode). Mirrors <c>splitEventParams</c> in the RN SDK.
+    /// currency / testEventCode / eventTimeUnix). Mirrors <c>splitEventParams</c>
+    /// in the RN SDK.
     /// </summary>
     internal static class EventParamSplitter
     {
@@ -15,6 +16,7 @@ namespace AppCat.Internal
             AppCatEventKeys.Value,
             AppCatEventKeys.Currency,
             AppCatEventKeys.TestEventCode,
+            AppCatEventKeys.EventTimeUnix,
         };
 
         public static void Split(

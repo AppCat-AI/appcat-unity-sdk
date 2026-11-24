@@ -26,6 +26,21 @@ namespace AppCat.Tests
         }
 
         [Test]
+        public void RoutesEventTimeUnixToOptionsNotCustomParams()
+        {
+            EventParamSplitter.Split(new Dictionary<string, object>
+            {
+                ["orderId"] = "o1",
+                [AppCatEventKeys.EventTimeUnix] = 1700000000L,
+            }, out var p, out var o);
+
+            Assert.That(AppCatEventKeys.EventTimeUnix, Is.EqualTo("eventTimeUnix"));
+            Assert.That(p.Keys, Is.EquivalentTo(new[] { "orderId" }));
+            Assert.That(o.Keys, Is.EquivalentTo(new[] { "eventTimeUnix" }));
+            Assert.That(o["eventTimeUnix"], Is.EqualTo(1700000000L));
+        }
+
+        [Test]
         public void NullInputYieldsEmptyDictionaries()
         {
             EventParamSplitter.Split(null, out var p, out var o);
@@ -121,6 +136,30 @@ namespace AppCat.Tests
             var id = reg.Register(out var task);
             reg.Complete(id, "{\"a\":1}", null, null);
             Assert.That(await task, Is.EqualTo("{\"a\":1}"));
+            Assert.That(reg.PendingCount, Is.EqualTo(0));
+        }
+
+        // The native bridges report "no value" as the JSON literal "null" (never
+        // a null string: AndroidJavaProxy cannot dispatch a null argument). The
+        // awaiting task must complete and the payload must decode to "nothing".
+        [Test]
+        public async Task CompletesWithNullSentinelFromNativeBridges()
+        {
+            var reg = new NativeCallbackRegistry(new InlineDispatcher());
+
+            // setTrackingConsent success: the task only needs to complete.
+            var consentId = reg.Register(out var consentTask);
+            reg.Complete(consentId, "null", null, null);
+            Assert.That(consentTask.IsCompletedSuccessfully, Is.True);
+            Assert.That(await consentTask, Is.EqualTo("null"));
+
+            // identify with no profile: decodes to the empty response.
+            var identifyId = reg.Register(out var identifyTask);
+            reg.Complete(identifyId, "null", null, null);
+            var raw = AppCatJson.DecodeObject(await identifyTask);
+            Assert.That(raw, Is.Null);
+            Assert.That(ResponseMapper.ToIdentifyResponse(raw), Is.SameAs(IdentifyResponse.Empty));
+
             Assert.That(reg.PendingCount, Is.EqualTo(0));
         }
 
